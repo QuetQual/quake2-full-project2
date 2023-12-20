@@ -341,6 +341,7 @@ typedef struct
 
 	int			total_monsters;
 	int			killed_monsters;
+	int			money;
 
 	edict_t		*current_entity;	// entity running from G_RunFrame
 	int			body_que;			// dead bodies
@@ -1056,7 +1057,7 @@ struct edict_s
 	vec3_t		avelocity;
 	int			mass;
 	float		air_finished;
-	float		gravity;		// per entity gravity multiplier (1.0 is normal)
+	float		gravity;		// per entity gravity multiplier (1.0 is normal) --- increase this to 1.5? and items decrease by .5
 								// use for lowgrav artifact, flares
 
 	edict_t		*goalentity;

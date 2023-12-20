@@ -18,7 +18,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 #include "g_local.h"
-
+//#include "testScore.c"
 
 
 /*
@@ -28,6 +28,24 @@ INTERMISSION
 
 ======================================================================
 */
+
+// Add these functions at the beginning of hud.c
+
+
+/*
+==================
+SingleplayerScoreboard
+
+Display singleplayer scoreboard.
+==================
+*/ /*
+void SingleplayerScoreboard(edict_t *ent) {
+    //test stuff #$#$@#%$%$#%$$$$$$$$ this didnt work i think and i ended up just using the helpcomputer
+    SingleplayerScoreboardMessage(ent);
+    gi.unicast(ent, true);
+} */
+
+
 
 void MoveClientToIntermission (edict_t *ent)
 {
@@ -266,6 +284,21 @@ void DeathmatchScoreboard (edict_t *ent)
 }
 
 
+float reMaxSpeed(float speed)//add speed to the score equation?
+{
+	float maxSpeed;
+
+	if (speed < maxSpeed)
+	{
+		maxSpeed == speed;
+	}
+	else if (maxSpeed <= speed)
+	{
+
+		return maxSpeed;
+	}
+	
+}
 /*
 ==================
 Cmd_Score_f
@@ -279,11 +312,13 @@ void Cmd_Score_f (edict_t *ent)
 	ent->client->showhelp = false;
 
 	if (!deathmatch->value && !coop->value)
+		ent->client->showscores = true;
+		DeathmatchScoreboard(ent);   //nope
 		return;
 
 	if (ent->client->showscores)
 	{
-		ent->client->showscores = false;
+		ent->client->showscores = true;
 		return;
 	}
 
@@ -294,7 +329,7 @@ void Cmd_Score_f (edict_t *ent)
 
 /*
 ==================
-HelpComputer
+HelpComputer / I made this my help screen. (maybe sorta a ui change?)
 
 Draw help computer.
 ==================
@@ -304,6 +339,7 @@ void HelpComputer (edict_t *ent)
 	char	string[1024];
 	char	*sk;
 
+	//sk doesnt do anything now but ima just leave it
 	if (skill->value == 0)
 		sk = "easy";
 	else if (skill->value == 1)
@@ -315,20 +351,22 @@ void HelpComputer (edict_t *ent)
 
 	// send the layout
 	Com_sprintf (string, sizeof(string),
-		"xv 32 yv 8 picn help "			// background
-		"xv 202 yv 12 string2 \"%s\" "		// skill
-		"xv 0 yv 24 cstring2 \"%s\" "		// level name
-		"xv 0 yv 54 cstring2 \"%s\" "		// help 1
-		"xv 0 yv 110 cstring2 \"%s\" "		// help 2
-		"xv 50 yv 164 string2 \" kills     goals    secrets\" "
-		"xv 50 yv 172 string2 \"%3i/%3i     %i/%i       %i/%i\" ", 
-		sk,
-		level.level_name,
-		game.helpmessage1,
-		game.helpmessage2,
-		level.killed_monsters, level.total_monsters, 
-		level.found_goals, level.total_goals,
-		level.found_secrets, level.total_secrets);
+			//"xv 32 yv 8 picn help "  // background: removed it so the text is just floating in the center of the screen
+			"xv 0 yv 24 cstring2 \"Welcome to Learn to fly: Quake\" "  
+			"xv 0 yv 54 cstring2 \"Basic Controls:\" "
+			"xv 0 yv 70 cstring2 \"[hold] spacebar = attempt to 'fly'\" "
+			"xv 0 yv 86 cstring2 \"~ = open console to access shop\" "
+			"xv 0 yv 110 cstring2 \"And to access the shop, type:  shop   into the console\" "
+			"xv 0 yv 130 cstring2 \"To buy an item from the shop, enter: buy [# of item]\" "
+			"xv 0 yv 160 cstring2 \"Score: %d\" "
+			"xv 0 yv 180 cstring2 \"Kill Count: %d\" "  // neat it sorta all works
+			"xv 0 yv 200 cstring2 \"Money: %d\" ", level.score, level.killed_monsters, level.money
+			);
+	if (level.killed_monsters > level.money) //money isnt increasing so this is like a really bad version of that.
+	{
+		level.money++;
+		level.score = level.killed_monsters * 77;
+	}
 
 	gi.WriteByte (svc_layout);
 	gi.WriteString (string);
@@ -343,12 +381,12 @@ Cmd_Help_f
 Display the current help message
 ==================
 */
-void Cmd_Help_f (edict_t *ent)
+void Cmd_Help_f(edict_t* ent)
 {
 	// this is for backwards compatability
 	if (deathmatch->value)
 	{
-		Cmd_Score_f (ent);
+		Cmd_Score_f(ent);
 		return;
 	}
 
@@ -363,11 +401,12 @@ void Cmd_Help_f (edict_t *ent)
 
 	ent->client->showhelp = true;
 	ent->client->pers.helpchanged = 0;
-	HelpComputer (ent);
+	HelpComputer(ent);
 }
 
 
-//=======================================================================
+
+
 
 /*
 ===============
@@ -379,30 +418,41 @@ void G_SetStats (edict_t *ent)
 	gitem_t		*item;
 	int			index, cells;
 	int			power_armor_type;
+	//
+	// max height reached (this should allow the help computer to also act as a scoreboard for the game. 
+	//
+	//ent->client->ps.stats[STAT_HEIGHT] = ent->height;
 
 	//
-	// health
+	// ui element change (penguin) 
+	//
+	//ent->client->ps.stats[STAT_PENGUIN_ICON] = gi.imageindex("icons/penguin_icon.tga"); //dont work ;-;
+
+
+
+	//
+	// health:   level.pic_health    ent->health
 	//
 	ent->client->ps.stats[STAT_HEALTH_ICON] = level.pic_health;
-	ent->client->ps.stats[STAT_HEALTH] = ent->health;
-
+	ent->client->ps.stats[STAT_HEALTH];
+	
 	//
 	// ammo
 	//
 	if (!ent->client->ammo_index /* || !ent->client->pers.inventory[ent->client->ammo_index] */)
 	{
 		ent->client->ps.stats[STAT_AMMO_ICON] = 0;
-		ent->client->ps.stats[STAT_AMMO] = 0;
+		ent->client->ps.stats[STAT_AMMO];
 	}
 	else
 	{
 		item = &itemlist[ent->client->ammo_index];
 		ent->client->ps.stats[STAT_AMMO_ICON] = gi.imageindex (item->icon);
-		ent->client->ps.stats[STAT_AMMO] = ent->client->pers.inventory[ent->client->ammo_index];
+		ent->client->ps.stats[STAT_AMMO]/*ent->client->pers.inventory[ent->client->ammo_index]*/;
 	}
-	
-	//
-	// armor
+	/* 
+	//   kinda ui changes to a degree
+ 	// armor
 	//
 	power_armor_type = PowerArmorType (ent);
 	if (power_armor_type)
@@ -442,7 +492,7 @@ void G_SetStats (edict_t *ent)
 		ent->client->ps.stats[STAT_PICKUP_ICON] = 0;
 		ent->client->ps.stats[STAT_PICKUP_STRING] = 0;
 	}
-
+	*/
 	//
 	// timers
 	//
@@ -520,6 +570,15 @@ void G_SetStats (edict_t *ent)
 		ent->client->ps.stats[STAT_HELPICON] = 0;
 
 	ent->client->ps.stats[STAT_SPECTATOR] = 0;
+
+	
+
+	/* //test to add new ui elemnet (didnt work)
+	char	string[1024];
+	Com_sprintf(string, sizeof(string),
+		"xv 0 yv 0 cstring2 \"Learn to Fly: Quake 2 Edition\" "); */
+		
+
 }
 
 /*

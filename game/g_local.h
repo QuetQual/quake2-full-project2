@@ -30,6 +30,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // the "gameversion" client command will print this plus compile date
 #define	GAMEVERSION	"baseq2"
 
+//money stuff maybe
+
+
+
 // protocol bytes that can be directly added to messages
 #define	svc_muzzleflash		1
 #define	svc_muzzleflash2	2
@@ -87,6 +91,7 @@ typedef enum
 	DAMAGE_YES,			// will take damage if hit
 	DAMAGE_AIM			// auto targeting recognizes this
 } damage_t;
+
 
 typedef enum 
 {
@@ -324,6 +329,7 @@ typedef struct
 	int			sound2_entity_framenum;
 
 	int			pic_health;
+	int         pic_penguin;
 
 	int			total_secrets;
 	int			found_secrets;
@@ -333,6 +339,8 @@ typedef struct
 
 	int			total_monsters;
 	int			killed_monsters;
+	int			money;
+	int			score;
 
 	edict_t		*current_entity;	// entity running from G_RunFrame
 	int			body_que;			// dead bodies
@@ -503,15 +511,15 @@ extern	int	body_armor_index;
 extern	int	meansOfDeath;
 
 
-extern	edict_t			*g_edicts;
+extern	edict_t			*g_edicts; //global entity list 0 = the world itself
 
 #define	FOFS(x) (int)&(((edict_t *)0)->x)
 #define	STOFS(x) (int)&(((spawn_temp_t *)0)->x)
 #define	LLOFS(x) (int)&(((level_locals_t *)0)->x)
 #define	CLOFS(x) (int)&(((gclient_t *)0)->x)
 
-#define random()	((rand () & 0x7fff) / ((float)0x7fff))
-#define crandom()	(2.0 * (random() - 0.5))
+#define random()	((rand () & 0x7fff) / ((float)0x7fff)) // & is a bitwise operator - filters out the higher order bits (lower order more random)
+#define crandom()	(2.0 * (random() - 0.5)) //random number gen - fraction between 0-1 * 2
 
 extern	cvar_t	*maxentities;
 extern	cvar_t	*deathmatch;
@@ -857,6 +865,9 @@ typedef struct
 
 	int			power_cubes;	// used for tracking the cubes in coop games
 	int			score;			// for calculating total unit score in coop games
+	int			killed_monsters;
+	int			money;
+
 
 	int			game_helpchanged;
 	int			helpchanged;
@@ -959,6 +970,8 @@ struct gclient_s
 
 	edict_t		*chase_target;		// player we are chasing
 	qboolean	update_chase;		// need to update chase info?
+
+
 };
 
 

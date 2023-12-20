@@ -857,7 +857,7 @@ void SP_worldspawn (edict_t *ent)
 
 	// help icon for statusbar
 	gi.imageindex ("i_help");
-	level.pic_health = gi.imageindex ("i_health");
+	level.pic_health = gi.imageindex ("icons/penguin_icon.tga"); // i_health //this doesn't seem to do anything thought id be able to change the like image i guess not.
 	gi.imageindex ("help");
 	gi.imageindex ("field_3");
 

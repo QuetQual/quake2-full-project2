@@ -829,7 +829,7 @@ void Blaster_Fire (edict_t *ent, vec3_t g_offset, int damage, qboolean hyper, in
 	VectorScale (forward, -2, ent->client->kick_origin);
 	ent->client->kick_angles[0] = -1;
 
-	fire_blaster (ent, start, forward, damage, 1000, effect, hyper);
+	fire_blaster (ent, start, forward, damage, 10, effect, hyper);
 
 	// send muzzle flash
 	gi.WriteByte (svc_muzzleflash);
@@ -1215,7 +1215,7 @@ void weapon_shotgun_fire (edict_t *ent)
 		fire_shotgun (ent, start, forward, damage, kick, 500, 500, DEFAULT_SHOTGUN_COUNT, MOD_SHOTGUN);
 
 	// send muzzle flash
-	gi.WriteByte (svc_muzzleflash);
+	gi.WriteByte (svc_muzzleflash); //gi means game import
 	gi.WriteShort (ent-g_edicts);
 	gi.WriteByte (MZ_SHOTGUN | is_silenced);
 	gi.multicast (ent->s.origin, MULTICAST_PVS);
@@ -1310,7 +1310,7 @@ void weapon_railgun_fire (edict_t *ent)
 	if (deathmatch->value)
 	{	// normal damage is too extreme in dm
 		damage = 100;
-		kick = 200;
+		kick = 2;
 	}
 	else
 	{

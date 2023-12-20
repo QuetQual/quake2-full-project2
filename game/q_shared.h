@@ -990,8 +990,9 @@ typedef enum
 
 
 // player_state->stats[] indexes
+#define STAT_PENGUIN_ICON       18 //test to add penguin icon
 #define STAT_HEALTH_ICON		0
-#define	STAT_HEALTH				1
+#define	STAT_HEALTH				1 //mighta broke it
 #define	STAT_AMMO_ICON			2
 #define	STAT_AMMO				3
 #define	STAT_ARMOR_ICON			4

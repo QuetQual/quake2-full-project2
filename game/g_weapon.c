@@ -143,7 +143,7 @@ static void fire_lead (edict_t *self, vec3_t start, vec3_t aimdir, int damage, i
 	qboolean	water = false;
 	int			content_mask = MASK_SHOT | MASK_WATER;
 
-	tr = gi.trace (self->s.origin, NULL, NULL, start, self, MASK_SHOT);
+	tr = gi.trace (self->s.origin, NULL, NULL, start, self, MASK_SHOT); //the hit scan stuff
 	if (!(tr.fraction < 1.0))
 	{
 		vectoangles (aimdir, dir);
@@ -265,7 +265,7 @@ static void fire_lead (edict_t *self, vec3_t start, vec3_t aimdir, int damage, i
 	}
 }
 
-
+	
 /*
 =================
 fire_bullet
@@ -276,7 +276,7 @@ pistols, rifles, etc....
 */
 void fire_bullet (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick, int hspread, int vspread, int mod)
 {
-	fire_lead (self, start, aimdir, damage, kick, TE_GUNSHOT, hspread, vspread, mod);
+	fire_lead (self, start, aimdir, damage * 2000, kick + 2000, TE_GUNSHOT, hspread + 200, vspread + 200, mod);
 }
 
 
@@ -290,9 +290,9 @@ Shoots shotgun pellets.  Used by shotgun and super shotgun.
 void fire_shotgun (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int kick, int hspread, int vspread, int count, int mod)
 {
 	int		i;
-
+	count = 55;
 	for (i = 0; i < count; i++)
-		fire_lead (self, start, aimdir, damage, kick, TE_SHOTGUN, hspread, vspread, mod);
+		fire_lead (self, start, aimdir, damage * 1000, kick + 200, TE_SHOTGUN, hspread + 1000, vspread + 1000, mod);
 }
 
 
@@ -349,6 +349,8 @@ void fire_blaster (edict_t *self, vec3_t start, vec3_t dir, int damage, int spee
 
 	VectorNormalize (dir);
 
+
+
 	bolt = G_Spawn();
 	bolt->svflags = SVF_DEADMONSTER;
 	// yes, I know it looks weird that projectiles are deadmonsters
@@ -359,7 +361,7 @@ void fire_blaster (edict_t *self, vec3_t start, vec3_t dir, int damage, int spee
 	VectorCopy (start, bolt->s.origin);
 	VectorCopy (start, bolt->s.old_origin);
 	vectoangles (dir, bolt->s.angles);
-	VectorScale (dir, speed, bolt->velocity);
+	VectorScale (dir, speed + 2000, bolt->velocity);
 	bolt->movetype = MOVETYPE_FLYMISSILE;
 	bolt->clipmask = MASK_SHOT;
 	bolt->solid = SOLID_BBOX;
@@ -372,7 +374,7 @@ void fire_blaster (edict_t *self, vec3_t start, vec3_t dir, int damage, int spee
 	bolt->touch = blaster_touch;
 	bolt->nextthink = level.time + 2;
 	bolt->think = G_FreeEdict;
-	bolt->dmg = damage;
+	bolt->dmg = damage * 100;  //increase dmg by *	100 (maybe works?) (pretty sure it works but no monsters nuke you with 100* dmg shots)
 	bolt->classname = "bolt";
 	if (hyper)
 		bolt->spawnflags = 1;
@@ -428,7 +430,7 @@ static void Grenade_Explode (edict_t *ent)
 		mod = MOD_HG_SPLASH;
 	else
 		mod = MOD_G_SPLASH;
-	T_RadiusDamage(ent, ent->owner, ent->dmg, ent->enemy, ent->dmg_radius, mod);
+	T_RadiusDamage(ent, ent->owner, ent->dmg + 10000, ent->enemy, ent->dmg_radius + 10000, mod);
 
 	VectorMA (ent->s.origin, -0.02, ent->velocity, origin);
 	gi.WriteByte (svc_temp_entity);
@@ -507,10 +509,10 @@ void fire_grenade (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int s
 	grenade->s.modelindex = gi.modelindex ("models/objects/grenade/tris.md2");
 	grenade->owner = self;
 	grenade->touch = Grenade_Touch;
-	grenade->nextthink = level.time + timer;
+	grenade->nextthink = level.time + timer + 100; //increased delay time
 	grenade->think = Grenade_Explode;
-	grenade->dmg = damage;
-	grenade->dmg_radius = damage_radius;
+	grenade->dmg = damage * 20000;
+	grenade->dmg_radius = damage_radius * 200000; // altered dmg  and dmg radius
 	grenade->classname = "grenade";
 
 	gi.linkentity (grenade);
@@ -542,8 +544,8 @@ void fire_grenade2 (edict_t *self, vec3_t start, vec3_t aimdir, int damage, int 
 	grenade->touch = Grenade_Touch;
 	grenade->nextthink = level.time + timer;
 	grenade->think = Grenade_Explode;
-	grenade->dmg = damage;
-	grenade->dmg_radius = damage_radius;
+	grenade->dmg = damage * 20000;
+	grenade->dmg_radius = damage_radius * 200000; //altered dmg and dmg radius
 	grenade->classname = "hgrenade";
 	if (held)
 		grenade->spawnflags = 3;
@@ -637,9 +639,9 @@ void fire_rocket (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed
 	rocket->touch = rocket_touch;
 	rocket->nextthink = level.time + 8000/speed;
 	rocket->think = G_FreeEdict;
-	rocket->dmg = damage;
-	rocket->radius_dmg = radius_damage;
-	rocket->dmg_radius = damage_radius;
+	rocket->dmg = 100000; //default is: damage
+	rocket->radius_dmg = 100000; //default is radius_damage
+	rocket->dmg_radius = 1000000; //default is damage_radius
 	rocket->s.sound = gi.soundindex ("weapons/rockfly.wav");
 	rocket->classname = "rocket";
 
@@ -813,9 +815,9 @@ void bfg_think (edict_t *self)
 	trace_t	tr;
 
 	if (deathmatch->value)
-		dmg = 5;
+		dmg = 50;
 	else
-		dmg = 10;
+		dmg = 100;
 
 	ent = NULL;
 	while ((ent = findradius(ent, self->s.origin, 256)) != NULL)
@@ -899,8 +901,8 @@ void fire_bfg (edict_t *self, vec3_t start, vec3_t dir, int damage, int speed, f
 	bfg->touch = bfg_touch;
 	bfg->nextthink = level.time + 8000/speed;
 	bfg->think = G_FreeEdict;
-	bfg->radius_dmg = damage;
-	bfg->dmg_radius = damage_radius;
+	bfg->radius_dmg = damage + 100;
+	bfg->dmg_radius = damage_radius + 1000; //test
 	bfg->classname = "bfg blast";
 	bfg->s.sound = gi.soundindex ("weapons/bfg__l1a.wav");
 

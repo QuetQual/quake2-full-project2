@@ -21,6 +21,109 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "m_player.h"
 
 
+
+
+// shop
+
+typedef struct
+{
+	int stat1;
+	int stat2;
+	int stat3;
+	int stat4;
+	int stat5;
+} player_stats;
+
+typedef struct
+{
+	char* name;
+	int cost;
+	player_stats stats;
+} shop_item;
+
+shop_item shop_items[] = {
+	{"Item1", 1, {1, 0, 0, 0, 0}},
+	{"Item2", 2, {1, 0, 0, 0, 0}},
+	{"Item3", 2, {0, 1, 0, 0, 0}},
+	{"Item4", 3, {0, 1, 0, 0, 0}},
+	{"Item5", 3, {0, 0, 1, 0, 0}},
+	{"Item6", 3, {0, 0, 1, 0, 0}},
+	{"Item7", 3, {0, 0, 0, 1, 0}},
+	{"Item8", 3, {0, 0, 0, 1, 0}},
+	{"Item9", 5, {1, 0, 0, 3, 1}},
+	{"Item10", 10, {1, 1, 1, 1, 1}},
+	// 10 items prices changed cause i changed how money happens
+};
+
+// Function to display shop items (it works!)
+
+// Function to display shop items and associated stats
+void ShowShopItems(edict_t* ent)
+{
+	int i;
+	gi.cprintf(ent, PRINT_HIGH, "Shop Items:\n");
+	for (i = 0; i < sizeof(shop_items) / sizeof(shop_item); i++)
+	{
+		gi.cprintf(ent, PRINT_HIGH, "%d. %s - Cost: %d - Stats: %d %d %d %d %d\n",
+			i + 1, shop_items[i].name, shop_items[i].cost,
+			shop_items[i].stats.stat1, shop_items[i].stats.stat2,
+			shop_items[i].stats.stat3, shop_items[i].stats.stat4,
+			shop_items[i].stats.stat5);
+	}
+}
+
+// Function to handle the purchase with stat upgrades
+void PurchaseItem(edict_t* ent, int itemIndex)
+{
+	if (itemIndex < 1 || itemIndex > sizeof(shop_items) / sizeof(shop_item))
+	{
+		gi.cprintf(ent, PRINT_HIGH, "Invalid item selection.\n");
+		return;
+	}
+
+	// Check if the player has enough money
+	if (level.money < shop_items[itemIndex - 1].cost)
+	{
+		gi.cprintf(ent, PRINT_HIGH, "Not enough money to buy %s.\n", shop_items[itemIndex - 1].name);
+		return;
+	}
+
+	// Purchase item and apply stat upgrades if i finish adding em
+	level.money -= shop_items[itemIndex - 1].cost;
+	//ApplyStatUpgrades(ent, &shop_items[itemIndex - 1].stats);
+
+	gi.cprintf(ent, PRINT_HIGH, "You purchased %s for %d money.\n", shop_items[itemIndex - 1].name, shop_items[itemIndex - 1].cost);
+}
+
+// handling shop command
+void Cmd_Shop_f(edict_t* ent)
+{
+	if (gi.argc() < 2)
+	{
+		// shows shop items
+		ShowShopItems(ent);
+	}
+	else
+	{
+		// user input and purchasing stuff
+		int itemIndex = atoi(gi.argv(1));
+		PurchaseItem(ent, itemIndex);
+	}
+}
+
+
+/*
+// Function to apply stat upgrades to the player (this is todo and will prob not be finished...)
+void ApplyStatUpgrades(edict_t* ent, player_stats* stats)
+{
+	// Apply the stat upgrades to the player
+	ent->client->ps.stats[STAT_STAT1] += stats->stat1;
+	ent->client->ps.stats[STAT_STAT2] += stats->stat2;
+	ent->client->ps.stats[STAT_STAT3] += stats->stat3;
+	ent->client->ps.stats[STAT_STAT4] += stats->stat4;
+	ent->client->ps.stats[STAT_STAT5] += stats->stat5;
+} */
+
 char *ClientTeam (edict_t *ent)
 {
 	char		*p;
@@ -913,6 +1016,22 @@ void ClientCommand (edict_t *ent)
 		return;		// not fully in game yet
 
 	cmd = gi.argv(0);
+	//new shop command to access shop
+	if (Q_stricmp(cmd, "shop") == 0)
+	{
+		Cmd_Shop_f(ent);
+		return;
+	}
+	// Buy command
+	else if (Q_stricmp(cmd, "buy") == 0 && gi.argc() > 1)
+	{
+		int itemIndex = atoi(gi.argv(1));
+		PurchaseItem(ent, itemIndex);
+		return;
+	}
+
+	
+
 
 	if (Q_stricmp (cmd, "players") == 0)
 	{
@@ -979,7 +1098,7 @@ void ClientCommand (edict_t *ent)
 		Cmd_WeapNext_f (ent);
 	else if (Q_stricmp (cmd, "weaplast") == 0)
 		Cmd_WeapLast_f (ent);
-	else if (Q_stricmp (cmd, "kill") == 0)
+	else if (Q_stricmp (cmd, "kill") == 0) 
 		Cmd_Kill_f (ent);
 	else if (Q_stricmp (cmd, "putaway") == 0)
 		Cmd_PutAway_f (ent);

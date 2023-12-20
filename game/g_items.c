@@ -1129,6 +1129,7 @@ void SpawnItem (edict_t *ent, gitem_t *item)
 		gi.modelindex (ent->model);
 }
 
+
 //======================================================================
 
 gitem_t	itemlist[] = 
